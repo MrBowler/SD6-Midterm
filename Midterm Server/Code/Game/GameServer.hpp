@@ -34,13 +34,22 @@ public:
 	void Update();
 
 private:
-	void SendPacketToClient( const CS6Packet& pkt, const ClientInfo& info );
+	void SendPacketToClient( const CS6Packet& pkt, const ClientInfo& info, bool requireAck );
+	void SendPacketToAllClients( const CS6Packet& pkt, bool requireAck );
 	std::string ConvertNumberToString( int number );
 	Color3b GetPlayerColorForID( unsigned int playerID );
-	Vector2 GetRandomPosition();
+	Vector2 GetPlayerPosition( unsigned int playerID );
+	bool HasItPlayerBeenAssigned();
+	void AddPlayer( const ClientInfo& info );
+	void ProcessAckPackets( const CS6Packet& ackPacket, const ClientInfo& info );
+	void SendUpdatesToClients();
 	void GetPackets();
+	void ResendAckPackets();
 
-	UDPServer	m_server;
+	UDPServer											m_server;
+	int													m_nextPacketNumber;
+	std::map< ClientInfo, Player* >						m_players;
+	std::map< ClientInfo, std::vector< CS6Packet > >	m_sendPacketsPerClient;
 };
 
 

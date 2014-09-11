@@ -11,6 +11,7 @@
 struct Player
 {
 	Color3b			m_color;
+	bool			m_isIt;
 	Vector2			m_position;
 	Vector2			m_velocity;
 	float			m_orientationDegrees;

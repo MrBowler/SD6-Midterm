@@ -18,6 +18,7 @@ struct Player
 	Vector2		m_previousVelocity;
 	float		m_orientationDegrees;
 	float		m_secondsSinceLastUpdate;
+	bool		m_isIt;
 };
 
 

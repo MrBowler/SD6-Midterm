@@ -22,7 +22,7 @@
 //-----------------------------------------------------------------------------------------------
 typedef unsigned char PacketType;
 static const PacketType TYPE_Acknowledge = 10;
-static const PacketType TYPE_Victory = 11;
+static const PacketType TYPE_Tag = 11;
 static const PacketType TYPE_Update = 12;
 static const PacketType TYPE_Reset = 13;
 
@@ -36,12 +36,11 @@ struct AckPacket
 //-----------------------------------------------------------------------------------------------
 struct ResetPacket
 {
-	float flagXPosition;
-	float flagYPosition;
 	float playerXPosition;
 	float playerYPosition;
 	//Player orientation should always start at 0 (east)
 	unsigned char playerColorAndID[ 3 ];
+	bool isIt;
 };
 
 //-----------------------------------------------------------------------------------------------
@@ -52,13 +51,14 @@ struct UpdatePacket
 	float xVelocity;
 	float yVelocity;
 	float yawDegrees;
+	bool  isIt;
 	//0 = east
 	//+ = counterclockwise
 	//range 0-359
 };
 
 //-----------------------------------------------------------------------------------------------
-struct VictoryPacket
+struct TagPacket
 {
 	unsigned char playerColorAndID[ 3 ];
 };
@@ -77,7 +77,7 @@ struct CS6Packet
 		AckPacket acknowledged;
 		ResetPacket reset;
 		UpdatePacket updated;
-		VictoryPacket victorious;
+		TagPacket playerTagged;
 	} data;
 };
 

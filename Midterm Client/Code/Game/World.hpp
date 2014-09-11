@@ -38,7 +38,6 @@ const double SECONDS_BEFORE_SEND_UPDATE_PACKET = 0.25;
 const unsigned short PORT_NUMBER = 5000;
 //const std::string IP_ADDRESS = "129.119.142.83";
 const std::string IP_ADDRESS = "127.0.0.1";
-const std::string FLAG_TEXTURE_FILE_PATH = "../Data/Images/Flag.png";
 const std::string PLAYER_TEXTURE_FILE_PATH = "../Data/Images/Player.png";
 
 
@@ -56,14 +55,24 @@ public:
 	void RenderObjects2D();
 
 private:
-	void SendPacket( const CS6Packet& pkt );
+	void SendPacket( const CS6Packet& pkt, bool requireAck );
+	void SendJoinGamePacket();
+	void ResetGame( const CS6Packet& resetPacket );
+	void UpdatePlayer( const CS6Packet& updatePacket );
 	void UpdateFromInput( const Keyboard& keyboard, const Mouse& mouse );
+	void SendUpdate();
 	void ReceivePackets();
 
 	Camera						m_camera;
 	Vector2						m_size;
+	Texture*					m_playerTexture;
 	UDPClient					m_client;
 	bool						m_isConnectedToServer;
+	int							m_nextPacketNumber;
+	double						m_secondsSinceLastInitSend;
+	Player*						m_mainPlayer;
+	std::vector< Player* >		m_players;
+	std::vector< CS6Packet >	m_sentPackets;
 };
 
 
