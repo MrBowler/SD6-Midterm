@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Engine">
+      <UniqueIdentifier>{d52f242f-8789-4968-ad30-bf54f8847a18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Game">
+      <UniqueIdentifier>{582ddd05-d37b-4db8-b3d9-d6ca48562e43}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Engine\Time.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\main.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\UDPServer.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameServer.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Engine\Time.hpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Vector2.hpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\ClientInfo.hpp">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Color3b.hpp">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CS6Packet.hpp">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Player.hpp">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\UDPServer.hpp">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameServer.hpp">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
