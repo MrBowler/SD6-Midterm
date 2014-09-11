@@ -38,10 +38,13 @@ private:
 	void SendPacketToAllClients( const CS6Packet& pkt, bool requireAck );
 	std::string ConvertNumberToString( int number );
 	Color3b GetPlayerColorForID( unsigned int playerID );
-	Vector2 GetPlayerPosition( unsigned int playerID );
+	Vector2 GetPlayerPosition( const Color3b& playerID );
+	Vector2 GetRandomPosition();
 	bool HasItPlayerBeenAssigned();
 	void AddPlayer( const ClientInfo& info );
+	void UpdatePlayer( const CS6Packet& updatePacket, const ClientInfo& info );
 	void ProcessAckPackets( const CS6Packet& ackPacket, const ClientInfo& info );
+	void PlayerTag( const CS6Packet& tagPacket, const ClientInfo& info );
 	void SendUpdatesToClients();
 	void GetPackets();
 	void ResendAckPackets();

@@ -56,12 +56,17 @@ public:
 
 private:
 	void SendPacket( const CS6Packet& pkt, bool requireAck );
+	void ResendAckPackets();
 	void SendJoinGamePacket();
 	void ResetGame( const CS6Packet& resetPacket );
 	void UpdatePlayer( const CS6Packet& updatePacket );
-	void UpdateFromInput( const Keyboard& keyboard, const Mouse& mouse );
+	void UpdateFromInput( const Keyboard& keyboard, const Mouse& mouse, float deltaSeconds );
+	void CheckForTag();
+	void SendTagPacket( const Player* taggedPlayer );
 	void SendUpdate();
 	void ReceivePackets();
+	void ApplyDeadReckoning( float deltaSeconds );
+	void RenderPlayers();
 
 	Camera						m_camera;
 	Vector2						m_size;

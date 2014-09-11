@@ -90,26 +90,37 @@ Color3b GameServer::GetPlayerColorForID( unsigned int playerID )
 
 
 //-----------------------------------------------------------------------------------------------
-Vector2 GameServer::GetPlayerPosition( unsigned int playerID )
+Vector2 GameServer::GetPlayerPosition( const Color3b& playerID )
 {
-	if( playerID == 0 )
+	if( playerID == GetPlayerColorForID( 0 ) )
 		return Vector2( 0.f, 0.f );
-	if( playerID == 1 )
+	if( playerID == GetPlayerColorForID( 1 ) )
 		return Vector2( 0.f, MAP_SIZE_HEIGHT - 1.f );
-	if( playerID == 2 )
+	if( playerID == GetPlayerColorForID( 2 ) )
 		return Vector2( MAP_SIZE_WIDTH - 1.f, MAP_SIZE_HEIGHT - 1.f );
-	if( playerID == 3 )
+	if( playerID == GetPlayerColorForID( 3 ) )
 		return Vector2( MAP_SIZE_WIDTH - 1.f, 0.f );
-	if( playerID == 4 )
+	if( playerID == GetPlayerColorForID( 4 ) )
 		return Vector2( 0.f, MAP_SIZE_HEIGHT * 0.5f );
-	if( playerID == 5 )
+	if( playerID == GetPlayerColorForID( 5 ) )
 		return Vector2( MAP_SIZE_WIDTH - 1.f, MAP_SIZE_HEIGHT * 0.5f );
-	if( playerID == 6 )
+	if( playerID == GetPlayerColorForID( 6 ) )
 		return Vector2( MAP_SIZE_WIDTH * 0.5f, 0.f );
-	if( playerID == 7 )
+	if( playerID == GetPlayerColorForID( 7 ) )
 		return Vector2( MAP_SIZE_WIDTH * 0.5f, MAP_SIZE_HEIGHT - 1.f );
 
 	return Vector2( MAP_SIZE_WIDTH * 0.5f, MAP_SIZE_HEIGHT * 0.5f );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vector2 GameServer::GetRandomPosition()
+{
+	Vector2 returnVec;
+	returnVec.x = (float) ( rand() % MAP_SIZE_WIDTH );
+	returnVec.y = (float) ( rand() % MAP_SIZE_HEIGHT );
+
+	return returnVec;
 }
 
 
@@ -145,7 +156,7 @@ void GameServer::AddPlayer( const ClientInfo& info )
 
 	player->m_color = GetPlayerColorForID( m_players.size() );
 	player->m_isIt = !HasItPlayerBeenAssigned();
-	player->m_position = GetPlayerPosition( m_players.size() );
+	player->m_position = GetPlayerPosition( player->m_color );
 	player->m_velocity = Vector2( 0.f, 0.f );
 	player->m_orientationDegrees = 0.f;
 	player->m_lastUpdateTime = GetCurrentTimeSeconds();
@@ -171,15 +182,27 @@ void GameServer::AddPlayer( const ClientInfo& info )
 
 
 //-----------------------------------------------------------------------------------------------
+void GameServer::UpdatePlayer( const CS6Packet& updatePacket, const ClientInfo& info )
+{
+	std::map< ClientInfo, Player* >::iterator playerIter = m_players.find( info );
+	if( playerIter != m_players.end() )
+	{
+		Player* player = playerIter->second;
+		player->m_position.x = updatePacket.data.updated.xPosition;
+		player->m_position.y = updatePacket.data.updated.yPosition;
+		player->m_velocity.x = updatePacket.data.updated.xVelocity;
+		player->m_velocity.y = updatePacket.data.updated.yVelocity;
+		player->m_orientationDegrees = updatePacket.data.updated.yawDegrees;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void GameServer::ProcessAckPackets( const CS6Packet& ackPacket, const ClientInfo& info )
 {
 	if( ackPacket.data.acknowledged.packetType == TYPE_Acknowledge )
 	{
 		AddPlayer( info );
-	}
-	else if( ackPacket.data.acknowledged.packetType == TYPE_Reset )
-	{
-		int t = 0;
 	}
 
 	std::map< ClientInfo, std::vector< CS6Packet > >::iterator vecIter = m_sendPacketsPerClient.find( info );
@@ -198,6 +221,47 @@ void GameServer::ProcessAckPackets( const CS6Packet& ackPacket, const ClientInfo
 
 			SendPacketToClient( packet, info, false );
 		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void GameServer::PlayerTag( const CS6Packet& tagPacket, const ClientInfo& info )
+{
+	CS6Packet ackPacket;
+	ackPacket.packetNumber = m_nextPacketNumber;
+	ackPacket.packetType = TYPE_Acknowledge;
+	ackPacket.playerColorAndID[0] = tagPacket.playerColorAndID[0];
+	ackPacket.playerColorAndID[1] = tagPacket.playerColorAndID[1];
+	ackPacket.playerColorAndID[2] = tagPacket.playerColorAndID[2];
+	ackPacket.timestamp = GetCurrentTimeSeconds();
+	ackPacket.data.acknowledged.packetNumber = tagPacket.packetNumber;
+	ackPacket.data.acknowledged.packetType = TYPE_Tag;
+
+	SendPacketToClient( tagPacket, info, false );
+
+	Color3b taggedPlayerColor( tagPacket.data.playerTagged.playerColorAndID[0], tagPacket.data.playerTagged.playerColorAndID[1], tagPacket.data.playerTagged.playerColorAndID[2] );
+
+	std::map< ClientInfo, Player* >::iterator playerIter;
+	for( playerIter = m_players.begin(); playerIter != m_players.end(); ++playerIter )
+	{
+		Player* player = playerIter->second;
+		Vector2 resetPos = GetPlayerPosition( player->m_color );
+		CS6Packet resetPacket;
+		resetPacket.packetNumber = m_nextPacketNumber;
+		resetPacket.packetType = TYPE_Reset;
+		resetPacket.playerColorAndID[0] = player->m_color.r;
+		resetPacket.playerColorAndID[1] = player->m_color.g;
+		resetPacket.playerColorAndID[2] = player->m_color.b;
+		resetPacket.timestamp = GetCurrentTimeSeconds();
+		resetPacket.data.reset.playerXPosition = resetPos.x;
+		resetPacket.data.reset.playerYPosition = resetPos.y;
+		if( taggedPlayerColor == player->m_color )
+			resetPacket.data.reset.isIt = true;
+		else
+			resetPacket.data.reset.isIt = false;
+
+		SendPacketToClient( resetPacket, info, true );
 	}
 }
 
@@ -245,6 +309,14 @@ void GameServer::GetPackets()
 		if( packet.packetType == TYPE_Acknowledge )
 		{
 			ProcessAckPackets( packet, info );
+		}
+		else if( packet.packetType == TYPE_Update )
+		{
+			UpdatePlayer( packet, info );
+		}
+		else if( packet.packetType == TYPE_Tag )
+		{
+			PlayerTag( packet, info );
 		}
 	}
 }
